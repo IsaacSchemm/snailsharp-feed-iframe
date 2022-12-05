@@ -117,9 +117,6 @@ namespace snailsharp_embedded_feed
                         <a class="entry" href="{enc(feed.Link)}" target="_top">
                             <center>Read more...</center>
                         </a>
-                        <p align="center" style="font-size: 75%">
-                            <a href="https://github.com/IsaacSchemm/snailsharp-feed-iframe/blob/main/Function1.cs" target="_top">view source</a>
-                        </p>
                     </body>
                     </html>
                     """;
