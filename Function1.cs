@@ -9,6 +9,8 @@ using System.Collections.Generic;
 using System.Net;
 using CodeHollow.FeedReader;
 using System.Linq;
+using System.Net.Http;
+using System;
 
 namespace snailsharp_embedded_feed
 {
@@ -19,7 +21,28 @@ namespace snailsharp_embedded_feed
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)] HttpRequest req,
             ILogger log)
         {
-            var feed = await FeedReader.ReadAsync("https://snailsharp.dreamwidth.org/data/rss");
+            Uri getUri()
+            {
+                foreach (string str in req.Query["url"])
+                    if (Uri.TryCreate(str, UriKind.Absolute, out Uri uri))
+                        return uri;
+
+                return new Uri("https://snailsharp.dreamwidth.org/data/rss");
+            }
+
+            int getCount()
+            {
+                foreach (string str in req.Query["count"])
+                    if (int.TryParse(str, out int i))
+                        return i;
+
+                return 5;
+            }
+
+            using var client = new HttpClient();
+            string str = await client.GetStringAsync(getUri());
+
+            var feed = FeedReader.ReadFromString(str);
 
             using var sw = new StringWriter();
 
@@ -38,7 +61,12 @@ namespace snailsharp_embedded_feed
                                 color: WindowText;
                                 font-family: sans-serif;
                             }
+                            p {
+                                margin: 0;
+                            }
                             img {
+                                max-width: 100px;
+                                max-height: 100px;
                                 border-radius: .5rem;
                                 margin: 0 1em 0 0;
                             }
@@ -96,27 +124,29 @@ namespace snailsharp_embedded_feed
                             <div style="clear: both" role="none"></div>
                         </a>
                     """;
-                foreach (var item in feed.Items.Take(5))
+                bool recentlyUpdated = feed.Items.Any(x => x.PublishingDate is DateTime dt && dt > DateTime.UtcNow.AddMonths(-3));
+                foreach (var item in feed.Items.Take(getCount()))
                 {
-                    yield return $"""
-                        <a class="entry" href="{enc(item.Link)}" target="_top">
-                            <div class="datetime">{enc(item.PublishingDate?.ToString("MMMM d, yyyy") ?? item.PublishingDateString)}</div>
-                            <div>{enc(item.Title)}</div>
-                        """;
+                    yield return $"""<a class="entry" href="{enc(item.Link)}" target="_top">""";
+                    if (recentlyUpdated)
+                        yield return $"""<div class="datetime">{enc(item.PublishingDate?.ToString("MMMM d, yyyy") ?? item.PublishingDateString)}</div>""";
+                    if (item.Title is string title)
+                        yield return $"<div>{enc(item.Title)}</div>";
+                    else
+                        yield return $"<div>{item.Description}</div>";
                     foreach (var category in item.Categories)
-                    {
                         yield return $"""
                             <span class="tag" aria-label="Tag">{enc(category)}</span>
                             """;
-                    }
-                    yield return $"""
-                        </a>
-                        """;
+                    yield return $"""</a>""";
                 }
                 yield return $"""
                         <a class="entry" href="{enc(feed.Link)}" target="_top">
                             <center>Read more...</center>
                         </a>
+                        <p align="center" style="font-size: 75%">
+                            <a href="https://github.com/IsaacSchemm/snailsharp-feed-iframe/blob/main/Function1.cs" target="_top">src</a>
+                        </p>
                     </body>
                     </html>
                     """;
