@@ -11,6 +11,7 @@ using CodeHollow.FeedReader;
 using System.Linq;
 using System.Net.Http;
 using System;
+using System.Text;
 
 namespace snailsharp_embedded_feed
 {
@@ -65,8 +66,9 @@ namespace snailsharp_embedded_feed
                                 margin: 0;
                             }
                             img {
-                                max-width: 100px;
-                                max-height: 100px;
+                                width: 100px;
+                                height: 100px;
+                                object-fit: contain;
                                 border-radius: .5rem;
                                 margin: 0 1em 0 0;
                             }
@@ -140,10 +142,13 @@ namespace snailsharp_embedded_feed
                             """;
                     yield return $"""</a>""";
                 }
-                yield return $"""
+                if (feed.Items.Count > getCount())
+                    yield return $"""
                         <a class="entry" href="{enc(feed.Link)}" target="_top">
                             <center>Read more...</center>
                         </a>
+                        """;
+                yield return $"""
                         <p align="center" style="font-size: 75%">
                             <a href="https://github.com/IsaacSchemm/snailsharp-feed-iframe/blob/main/Function1.cs" target="_top">src</a>
                         </p>
@@ -152,11 +157,9 @@ namespace snailsharp_embedded_feed
                     """;
             }
 
-            return new ContentResult
-            {
-                Content = string.Join("", build()),
-                ContentType = "text/html"
-            };
+            return new FileContentResult(
+                Encoding.UTF8.GetBytes(string.Join("", build())),
+                "text/html; charset=utf-8");
         }
     }
 }
