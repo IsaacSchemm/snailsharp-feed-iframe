@@ -113,7 +113,7 @@ namespace snailsharp_embedded_feed
                         </style>
                     </head>
                     <body style="font-family: sans-serif">
-                        <a class="entry" href="{{enc(feed.Link)}}">
+                        <a class="entry" href="{{enc(feed.Link)}}" target="_top">
                     """;
                 if (feed.ImageUrl != null)
                 {
