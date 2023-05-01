@@ -62,6 +62,11 @@ namespace snailsharp_embedded_feed
                                 color: WindowText;
                                 font-family: sans-serif;
                             }
+                            h1 {
+                                white-space: nowrap;
+                                overflow-x: hidden;
+                                text-overflow: ellipsis;
+                            }
                             p {
                                 margin: 0;
                             }
