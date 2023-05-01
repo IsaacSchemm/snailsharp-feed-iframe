@@ -132,7 +132,7 @@ namespace snailsharp_embedded_feed
                         </a>
                     """;
                 bool recentlyUpdated = feed.Items.Any(x => x.PublishingDate is DateTime dt && dt > DateTime.UtcNow.AddMonths(-3));
-                foreach (var item in feed.Items.Take(getCount()))
+                foreach (var item in feed.Items.OrderByDescending(x => x.PublishingDate).Take(getCount()))
                 {
                     yield return $"""<a class="entry" href="{enc(item.Link)}" target="_top">""";
                     if (recentlyUpdated)
