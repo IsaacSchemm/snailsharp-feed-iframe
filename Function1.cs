@@ -12,6 +12,8 @@ using System.Linq;
 using System.Net.Http;
 using System;
 using System.Text;
+using AngleSharp;
+using AngleSharp.Html.Parser;
 
 namespace snailsharp_embedded_feed
 {
@@ -131,6 +133,9 @@ namespace snailsharp_embedded_feed
                             <div style="clear: both" role="none"></div>
                         </a>
                     """;
+
+                var parser = BrowsingContext.New(Configuration.Default).GetService<IHtmlParser>();
+
                 bool recentlyUpdated = feed.Items.Any(x => x.PublishingDate is DateTime dt && dt > DateTime.UtcNow.AddMonths(-3));
                 foreach (var item in feed.Items.OrderByDescending(x => x.PublishingDate).Take(getCount()))
                 {
@@ -140,7 +145,7 @@ namespace snailsharp_embedded_feed
                     if (item.Title is string title)
                         yield return $"<div>{enc(item.Title)}</div>";
                     else
-                        yield return $"<div>{item.Description}</div>";
+                        yield return $"<div>{enc(parser.ParseDocument(item.Description).DocumentElement.TextContent)}</div>";
                     foreach (var category in item.Categories)
                         yield return $"""
                             <span class="tag" aria-label="Tag">{enc(category)}</span>
