@@ -145,7 +145,7 @@ namespace snailsharp_embedded_feed
                     if (item.Title is string title)
                         yield return $"<div>{enc(item.Title)}</div>";
                     else
-                        yield return $"<div>{enc(parser.ParseDocument(item.Description).DocumentElement.TextContent)}</div>";
+                        yield return $"<div>{enc(parser.ParseDocument(item.Description).DocumentElement.TextContent.Split('\r', '\n').First())}</div>";
                     foreach (var category in item.Categories)
                         yield return $"""
                             <span class="tag" aria-label="Tag">{enc(category)}</span>
