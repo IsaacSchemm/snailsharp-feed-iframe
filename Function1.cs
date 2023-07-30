@@ -136,16 +136,16 @@ namespace snailsharp_embedded_feed
 
                 var parser = BrowsingContext.New(Configuration.Default).GetService<IHtmlParser>();
 
+                string getText(FeedItem item) => item.Title ?? parser.ParseDocument(item.Description).DocumentElement.TextContent;
+                bool isNotReply(FeedItem item) => !getText(item).StartsWith("@");
+
                 bool recentlyUpdated = feed.Items.Any(x => x.PublishingDate is DateTime dt && dt > DateTime.UtcNow.AddMonths(-3));
-                foreach (var item in feed.Items.OrderByDescending(x => x.PublishingDate).Take(getCount()))
+                foreach (var item in feed.Items.OrderByDescending(x => x.PublishingDate).Where(isNotReply).Take(getCount()))
                 {
                     yield return $"""<a class="entry" href="{enc(item.Link)}" target="_top">""";
                     if (recentlyUpdated)
                         yield return $"""<div class="datetime">{enc(item.PublishingDate?.ToString("MMMM d, yyyy") ?? item.PublishingDateString)}</div>""";
-                    if (item.Title is string title)
-                        yield return $"<div>{enc(item.Title)}</div>";
-                    else
-                        yield return $"<div>{enc(parser.ParseDocument(item.Description).DocumentElement.TextContent.Split('\r', '\n').First())}</div>";
+                    yield return $"<div>{enc(getText(item))}</div>";
                     foreach (var category in item.Categories)
                         yield return $"""
                             <span class="tag" aria-label="Tag">{enc(category)}</span>
