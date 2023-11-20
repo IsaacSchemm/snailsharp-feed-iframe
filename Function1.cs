@@ -136,7 +136,12 @@ namespace snailsharp_embedded_feed
 
                 var parser = BrowsingContext.New(Configuration.Default).GetService<IHtmlParser>();
 
-                string getText(FeedItem item) => item.Title ?? parser.ParseDocument(item.Description).DocumentElement.TextContent;
+                string getText(FeedItem item) {
+                    string text = item.Title ?? parser.ParseDocument(item.Description).DocumentElement.TextContent;
+                    return text.Length > 200
+                        ? text.Substring(50) + "..."
+                        : text;
+                };
                 bool isNotReply(FeedItem item) => !getText(item).StartsWith("@");
 
                 bool recentlyUpdated = feed.Items.Any(x => x.PublishingDate is DateTime dt && dt > DateTime.UtcNow.AddMonths(-3));
